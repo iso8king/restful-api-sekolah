@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum roleUser{
+  admin
+  guru
+  siswa
+}
+
+enum statusAbsensi{
+  hadir
+  sakit
+  izin
+  alfa
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  email String @unique @db.VarChar(100)
+  password String @db.VarChar(100)
+  nama String @db.VarChar(100)
+  role roleUser
+  token String? @db.VarChar(100)
+  siswa Siswa?
+  guru Guru?
+
+  @@map("users")
+}
+
+model Kelas{
+  id Int @id @default(autoincrement())
+  nama_kelas String @db.VarChar(100)
+  siswa Siswa[]
+  @@map("kelas")
+}
+
+model Siswa {
+  id Int @id @default(autoincrement())
+  nama String @db.VarChar(100)
+  userId Int @unique
+  kelasId Int? //kelas null jangan lupa kalo mau select
+  absensi Absensi[]
+
+  user User @relation(fields: [userId] , references: [id])
+  kelas Kelas? @relation(fields: [kelasId] , references: [id])
+  @@map("siswa")
+}
+
+model Guru {
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  mapel Mapel[]
+
+  user User @relation(fields: [userId] , references: [id])
+
+  @@map("guru")
+}
+
+model Mapel{
+  id Int @id @default(autoincrement())
+  nama String @db.VarChar(100)
+  guru_id Int
+  absensi Absensi[]
+
+  guru Guru @relation(fields: [guru_id] , references: [id])
+
+  @@map("mata_pelajaran")
+}
+
+model Absensi{
+  id Int @id @default(autoincrement())
+  siswa_id Int 
+  mapel_id Int 
+  tanggal DateTime 
+  status statusAbsensi
+
+  mapel Mapel @relation(fields: [mapel_id] , references: [id])
+  siswa Siswa @relation(fields: [siswa_id] , references: [id])
+
+
+  @@unique([siswa_id , mapel_id , tanggal])
+  @@map("absensi")
+}

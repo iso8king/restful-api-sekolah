@@ -2,7 +2,8 @@ import supertest from "supertest";
 import { web } from "../src/application/web.js";
 import { logger } from "../src/application/logging.js";
 import bcrypt from "bcrypt"
-import { createTestUser, getTestGuru, getTestSiswa, removeTestGuru, removeTestSiswa, removeTestUser } from "./test-util.js";
+import { createTestUser, getTestGuru, getTestSiswa, getTestUser, removeTestGuru, removeTestSiswa, removeTestUser } from "./test-util.js";
+import { date } from "joi";
 
 describe('POST /api/users' , ()=>{
     afterEach(async()=>{
@@ -89,5 +90,103 @@ describe('POST /api/users/login' , ()=>{
 
         console.info(result.body);
         expect(result.status).toBe(401);
+    })
+})
+
+describe("/GET /api/users/current" , ()=>{
+    afterEach(async()=>{
+        await removeTestSiswa();
+        await removeTestGuru();
+        await removeTestUser();
+       
+    });
+    beforeEach(async()=>{
+        await createTestUser();
+
+    });
+
+    it('should can return user attribute' , async () => {
+        const result = await supertest(web).get('/api/users/current').set("Authorization" , "test");
+        console.log(result)
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.email).toBe("test@test.com");
+        expect(result.body.data.nama).toBe("test");
+        expect(result.body.data.role).toBe("guru")
+    })
+});
+
+describe('PATCH /api/users/current' , ()=>{
+    afterEach(async()=>{
+        await removeTestSiswa();
+        await removeTestGuru();
+        await removeTestUser();
+       
+    });
+    beforeEach(async()=>{
+        await createTestUser();
+
+    });
+
+    it('should update user password and nama' , async()=>{
+        const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+            password : "testo",
+            nama : "testo"
+        });
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.nama).toBe("testo");
+
+        const user = await getTestUser();
+        console.log(user)
+        expect(await bcrypt.compare("testo" , user.password)).toBe(true);
+    });
+        //jalankan unit test ini yang terakhir lalu cek di db hapus dulu kalo abis test
+    it('should update user email' , async()=>{
+        const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+            emailChange : "testo@testo.com"
+        });
+
+        console.log(result.body)
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.email).toBe("testo@testo.com");
+
+    });
+
+    it('should reject if invalid request' , async()=>{
+        const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+            email : "testo"
+        });
+
+        console.log(result.body)
+
+        expect(result.status).toBe(404);
+
+
+    });
+
+});
+
+describe('DELETE /api/users/logout' , ()=> {
+    afterEach(async()=>{
+        await removeTestSiswa();
+        await removeTestGuru();
+        await removeTestUser();
+       
+    });
+    beforeEach(async()=>{
+        await createTestUser();
+
+    });
+
+    it('should logout user' , async()=>{
+        const result = await supertest(web).delete('/api/users/logout').set("Authorization" , "test");
+
+        expect(result.status).toBe(200);
+        expect(result.body.data).toBe("OK");
+
+        const user = await getTestUser();
+        expect(user.token).toBeNull();
     })
 })

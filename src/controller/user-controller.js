@@ -24,6 +24,52 @@ const login = async(req,res,next)=>{
     }
 }
 
+const get = async(req,res,next)=>{
+    try {
+        const email = req.user.email;
+
+        const result = await userService.get(email);
+        res.status(200).json({
+            data : result
+        });
+        
+    } catch (e) {
+      next(e)  
+    }
+}
+
+const update = async(req,res,next)=> {
+    try {
+        const request = req.body;
+        const email = req.user.email;
+
+        if(!request.email){
+            request.email = email;
+        }
+
+        const result = await userService.update(request);
+        res.status(200).json({
+            data : result
+        })
+        
+    } catch (e) {
+       next(e) 
+    }
+}
+
+const logout = async(req,res,next)=>{
+    try {
+        const email = req.user.email;
+        const result = await userService.logout(email);
+        res.status(200).json({
+            data : "OK"
+        })
+        
+    } catch (e) {
+       next(e) 
+    }
+}
+
 export default{
-    register,login
+    register,login,get,update,logout
 }

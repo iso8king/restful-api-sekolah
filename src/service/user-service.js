@@ -1,5 +1,5 @@
 import { validate } from "../validation/validate.js";
-import { loginUserValidation, registerUserValidation } from "../validation/user-validation.js";
+import { getUserValidation, loginUserValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
 import bcrypt from 'bcrypt';
 import { prismaClient } from "../application/database.js";
 import { responseError } from "../error/response-error.js";
@@ -87,6 +87,84 @@ const login = async(request)=> {
     
 } 
 
+const get = async(email) => {
+    const emailRequest = validate(getUserValidation , email);
+
+    const user = await prismaClient.user.findUnique({
+        where : {
+            email : emailRequest
+        },select : {
+            email : true,
+            nama : true,
+            role : true
+        }
+    });
+    
+    if(!user){
+        throw new responseError(404 , "user not found!");
+    }
+    return user
+}
+
+const update = async(request)=>{
+    const user = validate(updateUserValidation , request);
+    const data = {};
+
+    const totalUserInDB = await prismaClient.user.count({
+        where : {
+            email : user.email
+        }
+    });
+
+    if(totalUserInDB !== 1){
+        throw new responseError(404 , "User Not Found!");
+    }
+
+    if(user.nama){
+        data.nama = user.nama;
+    }
+   
+     if(user.password){
+        data.password = await bcrypt.hash(user.password , 10);
+    }
+    if(user.emailChange){
+        data.email = user.emailChange
+    }
+    console.log(user)
+
+    return prismaClient.user.update({
+        where : {
+            email : user.email
+        },data : data,
+        select : {
+            email : true,
+            nama : true
+        }
+    })
+}
+
+const logout = async(email)=>{
+    email = validate(getUserValidation , email);
+
+    const user = await prismaClient.user.findUnique({
+        where : {
+            email : email
+        }
+    });
+
+    if(!user){
+        throw new responseError(404 , "User Not Found!");
+    }
+
+    await prismaClient.user.update({
+        where : {
+            email : email
+        },data : {
+            token : null
+        }
+    })
+}
+
 export default{
-    register,login
+    register,login,get,update,logout
 }

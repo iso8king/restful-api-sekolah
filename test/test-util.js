@@ -102,3 +102,20 @@ export const removeTestMapel = async()=>{
         }
     })
 }
+
+export const createTestMapel = async()=>{
+    await prismaClient.mapel.create({
+        data :{
+           nama : "test",
+            guru_id : 68
+        }
+    })
+}
+
+export const getTestMapel = async()=>{
+    return prismaClient.mapel.findFirst({
+        where : {
+            nama : "test"
+        }
+    })
+}

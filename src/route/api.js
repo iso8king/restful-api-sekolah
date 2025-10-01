@@ -12,7 +12,10 @@ userRouter.patch('/api/users/current' , userController.update);
 userRouter.delete('/api/users/logout' , userController.logout)
 
 //mapelAPI
-userRouter.post('/api/mapel' , authRole,mapelController.create)
+userRouter.post('/api/mapel' , authRole,mapelController.create);
+userRouter.get('/api/mapel/:mapelId' , mapelController.get);
+userRouter.patch('/api/mapel/:mapelId' , authRole,mapelController.update);
+userRouter.delete('/api/mapel/:mapelId' , authRole,mapelController.remove);
 
 
 export{

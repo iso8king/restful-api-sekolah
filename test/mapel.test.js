@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import { removeTestMapel } from "./test-util.js";
+import { createTestMapel, createTestUser, getTestMapel, removeTestMapel } from "./test-util.js";
 import { web } from "../src/application/web.js";
 
 describe("POST /api/mapel" , ()=>{
@@ -17,5 +17,60 @@ describe("POST /api/mapel" , ()=>{
         expect(result.status).toBe(200);
         expect(result.body.data.nama).toBe("test");
         expect(result.body.data.guru).toBeDefined();
+    })
+});
+
+describe("GET /api/mapel/:mapelId" , ()=>{
+    it("should return mapel with params" , async()=> {
+        const result = await supertest(web).get("/api/mapel/4").set("Authorization" , "27d8b5eb-1325-43f4-9f94-0a8f11fa8850");
+
+        console.log(result.body)
+        expect(result.status).toBe(200);
+        expect(result.body.data.id).toBe(4);
+        expect(result.body.data.nama).toBe("Algoritma");
+        expect(result.body.data.guru).toBeDefined();
+    });
+
+     it("should reject mapel with params null" , async()=> {
+        const result = await supertest(web).get("/api/mapel/5").set("Authorization" , "27d8b5eb-1325-43f4-9f94-0a8f11fa8850");
+
+        console.log(result.body)
+        expect(result.status).toBe(404);
+        
+    });
+});
+
+describe("POST /api/mapel/:mapelId" , ()=>{
+    it('should have update nama mapel' , async()=>{
+        const result = await supertest(web).patch("/api/mapel/4").set("Authorization" , "27d8b5eb-1325-43f4-9f94-0a8f11fa8850").send({
+            nama : "Algoritma Komputer"
+        });
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.nama).toBe("Algoritma Komputer");
+    })
+
+    it('should have update guru' , async()=>{
+        const result = await supertest(web).patch("/api/mapel/4").set("Authorization" , "27d8b5eb-1325-43f4-9f94-0a8f11fa8850").send({
+            guru_id : 68
+        });
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.nama).toBe("Algoritma Komputer");
+    })
+})
+
+describe('DELETE /api/mapel/:mapelId', ()=>{
+    beforeEach(async()=> {
+        await createTestMapel()
+    });
+
+    it('should delete mapel' , async()=>{
+        const testMapel = await getTestMapel();
+        console.log(testMapel);
+        const result = await supertest(web).delete('/api/mapel/' + testMapel.id).set("Authorization" , "27d8b5eb-1325-43f4-9f94-0a8f11fa8850");
+
+        expect(result.status).toBe(200);
+        expect(result.body.data).toBe("OK");
     })
 })

@@ -53,7 +53,7 @@ const register = async(request)=>{
 const login = async(request)=> {
     const loginRequest = validate(loginUserValidation , request);
 
-    const user = await prismaClient.user.findFirst({
+    const user = await prismaClient.user.findUnique({
         where : {
             email : loginRequest.email
         },select : {
@@ -73,9 +73,9 @@ const login = async(request)=> {
         throw new responseError(401,"Email Or Password wrong!");
     }
 
-    const token = uuid().toString();
+    const token = uuid();
 
-    return prismaClient.user.update({
+    const updateToken = await prismaClient.user.update({
         where : {
            id : user.id
         },data : {
@@ -83,7 +83,10 @@ const login = async(request)=> {
         },select : {
             token : true
         }
-    })
+    });
+
+    if (!updateToken.token) throw new responseError(500, "Token update failed");
+    return updateToken;
     
 } 
 

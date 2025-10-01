@@ -94,3 +94,11 @@ export const getTestUser = async()=>{
         }
     })
 }
+
+export const removeTestMapel = async()=>{
+    await prismaClient.mapel.deleteMany({
+        where : {
+            nama : "test"
+        }
+    })
+}

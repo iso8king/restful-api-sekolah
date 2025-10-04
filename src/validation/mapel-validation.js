@@ -13,6 +13,13 @@ const updateMapelValidation = Joi.object({
     //disini nanti ada buat absen tapi karena gw belom buat nanti tolong di buat ya
 })
 
+const searchMapelValidation = Joi.object({
+     page : Joi.number().min(1).positive().default(1),
+    size : Joi.number().min(1).max(100).default(10),
+    nama : Joi.string().optional(),
+    guru : Joi.string().optional()
+})
+
 export {
-    createMapelValidation,getMapelValidation,updateMapelValidation
+    createMapelValidation,getMapelValidation,updateMapelValidation,searchMapelValidation
 }

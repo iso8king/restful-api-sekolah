@@ -1,6 +1,6 @@
 import { validate } from "../validation/validate.js";
 import { prismaClient } from "../application/database.js";
-import { createMapelValidation, getMapelValidation, updateMapelValidation } from "../validation/mapel-validation.js";
+import { createMapelValidation, getMapelValidation, searchMapelValidation, updateMapelValidation } from "../validation/mapel-validation.js";
 import { responseError } from "../error/response-error.js";
 
 
@@ -87,6 +87,68 @@ const remove = async(mapelId)=>{
     })
 }
 
+const search = async(request)=>{
+    request = validate(searchMapelValidation , request);
+
+    const filters = [];
+    const skip = (request.page - 1)* request.size;
+
+    if(request.nama){
+        filters.push({
+            nama : {
+                contains : request.nama
+            }
+        });
+    }
+
+    if(request.guru){
+        filters.push({
+    guru: {
+      user: {
+        nama: {
+          contains: request.guru
+        }
+      }
+    }
+        });
+    }
+
+    const mapel = await prismaClient.mapel.findMany({
+        where : {
+            AND : filters
+        },
+        skip : skip,
+        take : request.size,
+        include : {
+            guru : {
+                include : {
+                    user : {
+                        select : {
+                            nama : true
+                        }
+                    }
+                }
+            }
+        }
+
+    });
+
+    const totalItems = await prismaClient.mapel.count({
+         where : {
+            AND : filters
+        }
+    });
+
+    return {
+        data : mapel,
+        paging : {
+            page : request.page,
+            total_item : totalItems,
+            total_page :  Math.ceil(totalItems/ request.size)
+        }
+    }
+}
+
 export default{
-    create,get,update,remove
+    create,get,update,remove,search
 }

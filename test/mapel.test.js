@@ -1,6 +1,7 @@
 import supertest from "supertest";
 import { createTestMapel, createTestUser, getTestMapel, removeTestMapel } from "./test-util.js";
 import { web } from "../src/application/web.js";
+import { request } from "express";
 
 describe("POST /api/mapel" , ()=>{
     afterEach(async()=>{
@@ -27,7 +28,7 @@ describe("GET /api/mapel/:mapelId" , ()=>{
         console.log(result.body)
         expect(result.status).toBe(200);
         expect(result.body.data.id).toBe(4);
-        expect(result.body.data.nama).toBe("Algoritma");
+        expect(result.body.data.nama).toBe("Algoritma Komputer");
         expect(result.body.data.guru).toBeDefined();
     });
 
@@ -72,5 +73,31 @@ describe('DELETE /api/mapel/:mapelId', ()=>{
 
         expect(result.status).toBe(200);
         expect(result.body.data).toBe("OK");
+    })
+})
+
+describe('GET /api/mapel/' , ()=>{
+    it("should search with filter nama " ,async()=>{
+        const result = await supertest(web).get('/api/mapel').query({nama : "Algoritma"});
+
+        console.log(result.body);
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.length).toBe(1);
+        expect(result.body.paging.page).toBe(1);
+        expect(result.body.paging.total_page).toBe(1);
+        expect(result.body.paging.total_item).toBe(1);
+    });
+
+    it("should search with filter nama guru " ,async()=>{
+        const result = await supertest(web).get('/api/mapel').query({guru : "haji dwi"});
+
+        console.log(result.body);
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.length).toBe(2);
+        expect(result.body.paging.page).toBe(1);
+        expect(result.body.paging.total_page).toBe(1);
+        expect(result.body.paging.total_item).toBe(2);
     })
 })

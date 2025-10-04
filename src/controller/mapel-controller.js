@@ -54,6 +54,21 @@ const remove = async (req,res,next) => {
     });
 }
 
+const search = async(req,res,next)=>{
+    const request = {
+        nama : req.query.nama,
+        guru : req.query.guru,
+        page : req.query.page,
+        size : req.query.size
+    }
+
+    const result = await mapelService.search(request);
+    res.status(200).json({
+        data : result.data,
+        paging : result.paging
+    })
+}
+
 export default {
-    create,get,update,remove
+    create,get,update,remove,search
 }

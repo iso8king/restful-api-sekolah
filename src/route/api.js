@@ -20,6 +20,9 @@ userRouter.delete('/api/mapel/:mapelId' , authRole,mapelController.remove);
 
 //absensiAPI
 userRouter.post('/api/absensi' , authRole , absensiController.create);
+userRouter.post('/api/absensi/:mapelId' , absensiController.get);
+userRouter.patch('/api/absensi/:mapelId',authRole , absensiController.update);
+userRouter.delete('/api/absensi/:mapelId' , authRole , absensiController.remove);
 
 
 export{

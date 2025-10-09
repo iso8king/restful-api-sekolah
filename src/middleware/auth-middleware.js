@@ -34,10 +34,15 @@ export const authMiddleware = async(req,res,next)=>{
 }
 
 export const authRole = async(req,res,next)=>{
-    const role = req.user.role;
+    try {
+        const role = req.user.role;
 
     if(role === "siswa"){
         throw new responseError(401 , "Unauthorized");
     }
     next()
+        
+    } catch (e) {
+        next(e)
+    }
 }

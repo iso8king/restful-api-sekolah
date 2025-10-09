@@ -38,7 +38,7 @@ model User{
 
 model Kelas{
   id Int @id @default(autoincrement())
-  nama_kelas String @db.VarChar(100)
+  nama_kelas String @db.VarChar(100) @unique
   siswa Siswa[]
   @@map("kelas")
 }

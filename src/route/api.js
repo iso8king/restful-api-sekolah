@@ -3,6 +3,7 @@ import userController from "../controller/user-controller.js";
 import { authMiddleware, authRole } from "../middleware/auth-middleware.js";
 import mapelController from "../controller/mapel-controller.js";
 import absensiController from "../controller/absensi-controller.js";
+import kelasController from "../controller/kelas-controller.js";
 
 const userRouter = express.Router();
 userRouter.use(authMiddleware); 
@@ -24,6 +25,9 @@ userRouter.post('/api/absensi/:mapelId' , absensiController.get);
 userRouter.patch('/api/absensi/:mapelId',authRole , absensiController.update);
 userRouter.delete('/api/absensi/:mapelId' , authRole , absensiController.remove);
 
+//kelasAPI
+userRouter.post('/api/kelas' , authRole , kelasController.create);
+userRouter.delete('/api/kelas' , authRole , kelasController.remove);
 
 export{
     userRouter

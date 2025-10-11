@@ -45,17 +45,23 @@ const update = async(req,res,next)=>{
 }
 
 const remove = async (req,res,next) => {
-    const mapelId = req.params.mapelId;
+   try {
+     const mapelId = req.params.mapelId;
 
     const result = await mapelService.remove(mapelId);
 
     res.status(200).json({
         data : "OK"
     });
+    
+   } catch (e) {
+    next(e)
+   }
 }
 
 const search = async(req,res,next)=>{
-    const request = {
+    try {
+        const request = {
         nama : req.query.nama,
         guru : req.query.guru,
         page : req.query.page,
@@ -67,6 +73,10 @@ const search = async(req,res,next)=>{
         data : result.data,
         paging : result.paging
     })
+        
+    } catch (e) {
+        next(e)
+    }
 }
 
 export default {

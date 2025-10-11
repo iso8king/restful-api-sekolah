@@ -21,7 +21,12 @@ const register = async(request)=>{
     user.password = await bcrypt.hash(user.password , 10);
 
     const registerUser = await prismaClient.user.create({
-        data:user,
+        data:{
+            email : user.email,
+            password : user.password,
+            nama : user.nama,
+            role : user.role 
+        },
         select : {
             email : true,
             nama : true,
@@ -37,11 +42,17 @@ const register = async(request)=>{
             }
         });
     }else if(user.role === "siswa"){
+        const kelas = await prismaClient.kelas.findUnique({
+            where : {
+                nama_kelas : user.kelas
+            }
+        })
+
         await prismaClient.siswa.create({
             data:{
                 userId : registerUser.id,
                 nama : registerUser.nama,
-                kelasId : 1 //ini ganti cok nanti pikirin cara nya gimana
+                kelasId : kelas.id
             }
         });
     }

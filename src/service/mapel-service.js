@@ -12,6 +12,7 @@ const create = async(guruId,request) => {
     return prismaClient.mapel.create({
         data : createRequest,
         select : {
+            id : true,
             nama : true,
             guru : true
         }

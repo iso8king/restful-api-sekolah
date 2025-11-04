@@ -23,6 +23,8 @@ const updateUserValidation = Joi.object({
     emailChange : Joi.string().max(100).optional()
 })
 
+const refreshTokenValidation = Joi.string().max(512).required();
+
 export{
-    registerUserValidation,loginUserValidation,getUserValidation,updateUserValidation
+    registerUserValidation,loginUserValidation,getUserValidation,updateUserValidation,refreshTokenValidation
 }

@@ -1,9 +1,10 @@
 import { validate } from "../validation/validate.js";
-import { getUserValidation, loginUserValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
+import { getUserValidation, loginUserValidation, refreshTokenValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
 import bcrypt from 'bcrypt';
 import { prismaClient } from "../application/database.js";
 import { responseError } from "../error/response-error.js";
 import {v4 as uuid} from 'uuid'
+import jwt from "jsonwebtoken"
 
 const register = async(request)=>{
     const user = validate(registerUserValidation , request);
@@ -84,20 +85,35 @@ const login = async(request)=> {
         throw new responseError(401,"Email Or Password wrong!");
     }
 
-    const token = uuid();
+    const tokenAccess = jwt.sign({
+        id : user.id,
+        email : user.email
+    }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn : "30s"
+    });
+
+    const tokenRefresh = jwt.sign({
+         id : user.id,
+        email : user.email
+    }, process.env.REFRESH_TOKEN_SECRET);
+
+    const token = {
+        accessToken : tokenAccess,
+        refreshToken : tokenRefresh
+    }
 
     const updateToken = await prismaClient.user.update({
         where : {
            id : user.id
         },data : {
-            token : token
+            token : tokenRefresh
         },select : {
             token : true
         }
     });
 
     if (!updateToken.token) throw new responseError(500, "Token update failed");
-    return updateToken;
+    return token;
     
 } 
 
@@ -179,6 +195,24 @@ const logout = async(email)=>{
     })
 }
 
+const refreshToken = async(tokenRefresh) => {
+    tokenRefresh = validate(refreshTokenValidation , tokenRefresh);
+    const user = await prismaClient.user.findUnique({
+        where : {
+            token : tokenRefresh
+        },
+        select : {
+            email : true,
+            id  : true
+        }
+    });
+
+    if(!user) throw new responseError(404 , "Token Not Found!");
+
+    const accessToken = jwt.sign(user , process.env.ACCESS_TOKEN_SECRET);
+    return accessToken;
+}
+
 export default{
-    register,login,get,update,logout
+    register,login,get,update,logout,refreshToken
 }

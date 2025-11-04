@@ -29,7 +29,7 @@ model User{
   password String @db.VarChar(100)
   nama String @db.VarChar(100)
   role roleUser
-  token String? @db.VarChar(100)
+  token String? @unique @db.VarChar(512)
   siswa Siswa?
   guru Guru?
 
